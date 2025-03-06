@@ -1,3 +1,10 @@
+"""
+Main module for assembling the PhiX genome.
+
+This script generates reads from a genome, builds an overlap graph using error-prone or clean reads,
+and evaluates the assembly performance. It uses the Graph and timer functions from strands_graph.py.
+"""
+
 import math
 import time
 import tqdm
@@ -6,13 +13,19 @@ import argparse
 from strands_graph import Graph, timings, timer
 
 
-def read_fasta(filename):
+def read_fasta(filename: str) -> str:
+    """
+    Reads a FASTA file and returns the genome sequence as a single string.
+    """
     with open(filename, 'r') as file:
         lines = file.readlines()
     return ''.join(line.strip() for line in lines if not line.startswith('>'))
 
 
-def generate_reads(genome, num_reads, read_length, error_prob):
+def generate_reads(genome: str, num_reads: int, read_length: int, error_prob: float) -> list[str]:
+    """
+    Generates a list of reads from the genome sequence, optionally introducing errors.
+    """
     genome_length = len(genome)
     bases = ['A', 'C', 'G', 'T']
     
@@ -22,7 +35,6 @@ def generate_reads(genome, num_reads, read_length, error_prob):
         read = list(genome[start_idx:start_idx + read_length])
         
         if error_prob > 0:
-            #print("here")
             for j in range(read_length):
                 if random.random() < error_prob:
                     read[j] = random.choice([b for b in bases if b != read[j]])
@@ -32,7 +44,12 @@ def generate_reads(genome, num_reads, read_length, error_prob):
     return reads
 
 
-def global_alignment(genome, sequence):
+def global_alignment(genome: str, sequence: str) -> tuple[float, float, float]:
+    """
+    Computes a global alignment between the genome and a given sequence.
+    Includes an early stopping mechanism if the alignment is sufficiently bad (e.g., when the offset is 5
+    and we are looking at offset 4, most characters would be misaligned).
+    """
     genome_length = len(genome)
     log_genome_length = math.log(genome_length, 2)
     
@@ -42,18 +59,23 @@ def global_alignment(genome, sequence):
             if i + j >= genome_length:
                 break
             count += int(c == genome[i + j])
-            if count - j > log_genome_length * 2: # Early stopping, see report
+            if count - j > log_genome_length * 2:  # Early stopping if alignment is sufficiently bad
                 break
-        if count > len(sequence) / 3:
-            #print("match of length", len(sequence), "out of", genome_length, "with count", count)
+        if count > len(sequence) / 3: # If alignment is sufficiently good, use it as the global alignment
             recall = float(count) / genome_length
             precision = float(count) / len(sequence)
             iou = float(count) / (len(sequence) + genome_length - count)
             return recall, precision, iou
-    return 0, 0, 0
+    return 0., 0., 0. # Failed to find any good alignments
 
 
-def iterative_test_sequencing(args, experiment_title, genome, num_reads, allow_mis_matches, testing_iterations=1, error_prob=0, print_results=True):
+def iterative_test_sequencing(args: argparse.Namespace, experiment_title: str, genome: str, num_reads: int,
+                              allow_mis_matches: int, testing_iterations: int = 1, error_prob: float = 0.0,
+                              print_results: bool = True) -> None:
+    """
+    Iteratively tests the genome assembly process by generating reads, assembling them into a graph,
+    and evaluating performance.
+    """
     if not args.hide_progress_bar:
         progress_bar = tqdm.tqdm(
             total=testing_iterations,
@@ -82,7 +104,6 @@ def iterative_test_sequencing(args, experiment_title, genome, num_reads, allow_m
         precision += p / testing_iterations
         iou += i / testing_iterations
 
-            
     if not args.hide_progress_bar:
         progress_bar.close()
     
@@ -94,7 +115,10 @@ def iterative_test_sequencing(args, experiment_title, genome, num_reads, allow_m
         print(f"iou: {iou}")
 
 
-def main():
+def main() -> None:
+    """
+    Main function to parse arguments, generate reads, assemble the genome, and evaluate performance.
+    """
     parser = argparse.ArgumentParser(description="Generate error-prone reads from a genome.")
     parser.add_argument("-f", "--fasta", type=str, default="sequence.fasta", help="Path to the FASTA file containing the genome sequence.")
     parser.add_argument("-l", "--read_length", type=int, default=100, help="Length of each read (default: 100).")
