@@ -15,6 +15,12 @@ Tested with Python 3.10.12.
 python3 main.py -f sequence.fasta -l 100 -N 3000 -p 0.01 -a 2 -i 100
 `
 
+- Help with the script's options can be obtained by running
+
+`
+python3 main.py --help
+`
+
 
 - **Reported Results:**  
 The results reported in the project report could be replicated by running:
