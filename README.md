@@ -3,7 +3,7 @@
 Tested with Python 3.10.12.
 
 ## Requirements
-- Python 3.10.12
+- Python 3.9+
 - tqdm (install via `pip install tqdm`)  
   Alternatively, use the `--hide_progress_bar` flag to disable progress visualization.
 
