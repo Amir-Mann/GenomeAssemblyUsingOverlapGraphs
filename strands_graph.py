@@ -150,8 +150,7 @@ class Graph:
         trie = TrieNode()
         
         for strand in strands:
-            with timer("insert_strand"):
-                vertex = trie.insert_strand(strand)
+            vertex = trie.insert_strand(strand)
             if vertex is not None:
                 vertex.sequence = strand
                 self.vertices[vertex] = None
@@ -159,13 +158,12 @@ class Graph:
         for vertex in self.vertices.keys():
             for i in range(1, len(vertex.sequence) - 2 * int(math.log(len(strands), 4))):
                 suffix_strand = vertex.sequence[i:]
-                with timer("search"):
-                    match = trie.search(suffix_strand, allow_mis_matches)
+                match = trie.search(suffix_strand, allow_mis_matches)
                 if match and match != vertex:
                     vertex.connected_vertices.append((match, len(vertex.sequence) - i))
                     break
 
-    def get_sequenced_result(self, min_overlap: int = 7, in_coming_links_min: int = 40) -> str:
+    def get_sequenced_result(self, min_overlap: int = 0, in_coming_links_min: int = 0) -> str:
         """
         Traverses the overlap graph to generate the assembled genome sequence.
         """

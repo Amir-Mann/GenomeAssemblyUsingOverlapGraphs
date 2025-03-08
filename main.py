@@ -122,42 +122,38 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate error-prone reads from a genome.")
     parser.add_argument("-f", "--fasta", type=str, default="sequence.fasta", help="Path to the FASTA file containing the genome sequence.")
     parser.add_argument("-l", "--read_length", type=int, default=100, help="Length of each read (default: 100).")
-    parser.add_argument("-c", "--coverage", type=float, default=50.0, help="Desired coverage (default: 50x).")
+    parser.add_argument("-N", "--num_reads", type=int, default=3000, help="Desired amount of reads.")
     parser.add_argument("-p", "--error_prob", type=float, default=0.01, help="Base mismatch probability (default: 0.01).")
-    parser.add_argument("-i", "--testing_iterations", type=int, default=1000, help="Number of iterations to test the quality of the algorithm. Only for erroneous reads")
-    parser.add_argument("-a", "--allow_mis_matches", type=str, choices=["0", "1", "2", "3", "log"], default="1", 
+    parser.add_argument("-i", "--testing_iterations", type=int, default=100, help="Number of iterations to test the quality of the algorithm. Only for erroneous reads")
+    parser.add_argument("-a", "--allow_mis_matches", type=str, choices=["0", "1", "2", "3", "4", "log"], default="2", 
                         help="How many miss matches to allow when comparing suffix to prefix. Only for erroneous reads")
 
     parser.add_argument("--hide_progress_bar", action="store_true", help="Hides the progress bar")
     parser.add_argument("--hide_timing", action="store_true", help="Hides the timing resultsprogress bar")
-    parser.add_argument("-s", "--seed", type=int, default=7, help="The seed to run the program with")
+    parser.add_argument("-s", "--seed", type=int, default=207732132, help="The seed to run the program with")
     args = parser.parse_args()
 
     random.seed(args.seed)
     
     genome = read_fasta(args.fasta)
-    genome_length = len(genome)
     
-    num_reads = int((args.coverage * genome_length) / args.read_length)
-    print(f"Generating {num_reads} reads.")
-
     if args.allow_mis_matches == "log":
         allow_mis_matches = int(math.log(args.read_length, 4))
     else:
         allow_mis_matches = int(args.allow_mis_matches)
     
-    iterative_test_sequencing(args, "Clean reads", genome, num_reads, allow_mis_matches=0)
-    
     start = time.time()
     
-    iterative_test_sequencing(args, f"With error probability {args.error_prob}", genome, num_reads, allow_mis_matches=allow_mis_matches,
+    title = f"Running with -l {args.read_length} -N {args.num_reads} -p {args.error_prob} -a {args.allow_mis_matches}"
+    iterative_test_sequencing(args, title, genome, args.num_reads, allow_mis_matches=allow_mis_matches,
                               testing_iterations=args.testing_iterations, error_prob=args.error_prob)
 
     total = time.time() - start
     if not args.hide_timing:
+        print()
         print(f"took {total:.2f} seconds to run")
         for key, value in timings.items():
-            print(f"{key} was {value / total * 100:.2f}% of runtime")
+            print(f"{key} was {value / total * 100:.2f}% of runtime, taking {value / args.testing_iterations:.3f} seconds to run on average.")
     
 
 if __name__ == "__main__":
