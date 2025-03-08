@@ -24,7 +24,8 @@ The results reported in the project report could be replicated by running:
 `
 
 - **Clean Reads Testing:**  
-To replicate results on error-free (clean) reads, run:  
+To replicate results on error-free (clean) reads, run:
+ 
 `
 ./run_clean_reads_tests.sh
 `
