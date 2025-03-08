@@ -3,7 +3,7 @@
 Tested with Python 3.10.12.
 
 ## Requirements
-- Python 3.10.12
+- Python 3.9+
 - tqdm (install via `pip install tqdm`)  
   Alternatively, use the `--hide_progress_bar` flag to disable progress visualization.
 
@@ -15,6 +15,12 @@ Tested with Python 3.10.12.
 python3 main.py -f sequence.fasta -l 100 -N 3000 -p 0.01 -a 2 -i 100
 `
 
+- Help with the script's options can be obtained by running
+
+`
+python3 main.py --help
+`
+
 
 - **Reported Results:**  
 The results reported in the project report could be replicated by running:
@@ -24,7 +30,8 @@ The results reported in the project report could be replicated by running:
 `
 
 - **Clean Reads Testing:**  
-To replicate results on error-free (clean) reads, run:  
+To replicate results on error-free (clean) reads, run:
+ 
 `
 ./run_clean_reads_tests.sh
 `
